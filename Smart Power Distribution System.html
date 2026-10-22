@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Smart Power Distribution System</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+:root{--bg:#f3f1ec;--card:#fff;--ink:#1d2230;--mute:#667085;--line:#dcd8cf;--amber:#f2a900;--amberink:#5a3d00;--ok:#1d8a4e;--bad:#c93a3a;--navy:#1d2a4d;--shadow:0 1px 2px rgba(0,0,0,.06);
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151f;--card:#1b2030;--ink:#eceef5;--mute:#9aa3b8;--line:#2c3350;--navy:#0c1020;--amberink:#ffd978;--shadow:none}}
+:root[data-theme="dark"]{--bg:#12151f;--card:#1b2030;--ink:#eceef5;--mute:#9aa3b8;--line:#2c3350;--navy:#0c1020;--amberink:#ffd978;--shadow:none}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Barlow',system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.5}
+.top{background:var(--navy);color:#fff;padding:18px 16px}
+.top div{max-width:980px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
+h1{font-family:'Barlow Condensed',system-ui,sans-serif;font-size:1.9rem;margin:0;letter-spacing:.01em}
+.meta{font-size:.88rem;color:#c9d0e6;display:flex;gap:16px;flex-wrap:wrap}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#3ddc84;margin-right:6px}
+.dot.off{background:#ff6b6b}
+main{max-width:980px;margin:0 auto;padding:16px}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+nav button{padding:9px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;font:inherit;font-weight:600;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--amber);border-color:var(--amber);color:#2a1d00}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+h2{font-family:'Barlow Condensed',system-ui,sans-serif;font-size:1.3rem;margin:0 0 10px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end}
+label{display:block;font-size:.85rem;color:var(--mute);margin-bottom:3px}
+input{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+.btn{padding:9px 16px;border:0;border-radius:8px;background:var(--navy);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+.btn.amber{background:var(--amber);color:#2a1d00}
+.btn.red{background:var(--bad)}
+.msg{margin-top:10px;font-size:.92rem;min-height:1.4em}
+.msg.ok{color:var(--ok)}.msg.err{color:var(--bad)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--mute);font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:12px}
+.stat b{display:block;font-family:'Barlow Condensed',system-ui,sans-serif;font-size:1.8rem;line-height:1.1}
+.stat span{font-size:.85rem;color:var(--mute)}
+.empty{color:var(--mute)}
+.queue{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.slot{width:44px;height:44px;border:2px dashed var(--line);border-radius:8px;display:grid;place-items:center;font-weight:700}
+.slot.f{border:2px solid var(--amber);background:color-mix(in srgb,var(--amber) 22%,transparent);color:var(--amberink)}
+.check{color:var(--ok);font-weight:600;margin:2px 0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header class="top"><div>
+  <h1>Smart Power Distribution System</h1>
+  <div class="meta">
+    <span><i class="dot" id="dot"></i><span id="status">Status: ONLINE</span></span>
+    <span>Region: Tamil Nadu Grid</span>
+    <span>Control mode: Automatic</span>
+  </div>
+</div></header>
+
+<main>
+<nav role="tablist" id="tabs"></nav>
+
+<section id="p-consumers">
+  <div class="card">
+    <h2>Register a consumer</h2>
+    <div class="form">
+      <div><label for="cid">Consumer ID</label><input id="cid" type="number" min="1"></div>
+      <div><label for="cname">Name</label><input id="cname" type="text" maxlength="49"></div>
+      <div><label for="cloc">Location</label><input id="cloc" type="text" maxlength="49"></div>
+      <div><label for="cunits">Energy usage (units)</label><input id="cunits" type="number" min="0" step="any"></div>
+      <div><button class="btn amber" id="addBtn">Add consumer</button></div>
+    </div>
+    <div class="msg" id="addMsg" role="status"></div>
+  </div>
+  <div class="card"><h2>Active consumers</h2><div class="tablewrap" id="consumerTable"></div></div>
+</section>
+
+<section id="p-station" hidden>
+  <div class="card">
+    <h2>Power station dashboard</h2>
+    <div class="stats">
+      <div class="stat"><b>Chennai Main Grid</b><span>Station name</span></div>
+      <div class="stat"><b>3 active</b><span>Substations</span></div>
+      <div class="stat"><b>Stable</b><span>Current load</span></div>
+    </div>
+    <p class="check">✔ Power distribution running normally</p>
+  </div>
+</section>
+
+<section id="p-load" hidden>
+  <div class="card"><h2>Load distribution monitor</h2><div id="loadBody"></div></div>
+</section>
+
+<section id="p-fault" hidden>
+  <div class="card">
+    <h2>Fault control center</h2>
+    <div class="form">
+      <div><label for="fid">Fault ID</label><input id="fid" type="number"></div>
+      <div><label for="floc">Fault location</label><input id="floc" type="text" value="Line" readonly></div>
+      <div><button class="btn amber" id="reportBtn">Report fault</button></div>
+      <div><button class="btn" id="resolveBtn">Resolve next fault</button></div>
+    </div>
+    <p class="empty" style="margin-bottom:0">Service queue (10 slots, first reported is resolved first)</p>
+    <div class="queue" id="queue"></div>
+    <div class="msg" id="faultMsg" role="status"></div>
+  </div>
+</section>
+
+<section id="p-billing" hidden>
+  <div class="card"><h2>Energy billing report</h2><div class="tablewrap" id="billTable"></div></div>
+</section>
+
+<section id="p-lookup" hidden>
+  <div class="card">
+    <h2>Consumer lookup</h2>
+    <div class="form">
+      <div><label for="sid">Consumer ID</label><input id="sid" type="number"></div>
+      <div><button class="btn amber" id="searchBtn">Search</button></div>
+    </div>
+    <div class="msg" id="searchMsg" role="status"></div>
+  </div>
+</section>
+
+<section id="p-shutdown" hidden>
+  <div class="card">
+    <h2>Shutdown system</h2>
+    <div id="shutBody"></div>
+  </div>
+</section>
+</main>
+
+<script>
+const MAX = 10, RATE = 5;
+let consumers = [];            // linked list: newest first
+let root = null;               // BST of IDs
+let queue = [];                // fault queue (FIFO, max 10)
+let online = true;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function insertBST(node, id) {
+  if (!node) return { id, left: null, right: null };
+  if (id < node.id) node.left = insertBST(node.left, id);
+  else node.right = insertBST(node.right, id);
+  return node;
+}
+function searchBST(node, id) {
+  while (node) { if (id === node.id) return true; node = id < node.id ? node.left : node.right; }
+  return false;
+}
+const fmt = n => Number.isInteger(n) ? n : n.toFixed(2).replace(/\.?0+$/, '');
+function msg(el, text, kind) { el.textContent = text; el.className = 'msg ' + kind; }
+
+// Tabs
+const tabs = [['consumers','Consumer control panel'],['station','Power station'],['load','Load monitor'],['fault','Fault control center'],['billing','Billing report'],['lookup','Consumer lookup'],['shutdown','Shutdown']];
+function show(key) {
+  tabs.forEach(([k]) => { $('p-' + k).hidden = k !== key; });
+  [...$('tabs').children].forEach(b => b.setAttribute('aria-selected', b.dataset.k === key));
+  render();
+}
+tabs.forEach(([k, label]) => {
+  const b = document.createElement('button');
+  b.textContent = label; b.dataset.k = k; b.setAttribute('role', 'tab');
+  b.onclick = () => show(k);
+  $('tabs').appendChild(b);
+});
+
+function table(head, rows, emptyText) {
+  if (!rows.length) return `<p class="empty">${emptyText}</p>`;
+  return `<table><thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+
+function render() {
+  $('consumerTable').innerHTML = table(['ID','Name','Area','Load (units)'],
+    consumers.map(c => [c.id, esc(c.name), esc(c.location), fmt(c.units)]), 'No consumers registered yet.');
+
+  const total = consumers.reduce((s, c) => s + c.units, 0);
+  $('loadBody').innerHTML = consumers.length
+    ? `<div class="stats">
+        <div class="stat"><b>${consumers.length}</b><span>Total consumers</span></div>
+        <div class="stat"><b>${fmt(total)}</b><span>Total load demand (units)</span></div>
+        <div class="stat"><b>${fmt(total / consumers.length)}</b><span>Average load (units)</span></div>
+      </div>
+      <p class="check">✔ Load balanced across substations</p><p class="check">✔ No overload detected</p>`
+    : '<p class="empty">No data available. Register a consumer first.</p>';
+
+  $('billTable').innerHTML = table(['ID','Name','Units','Bill'],
+    consumers.map(c => [c.id, esc(c.name), fmt(c.units), '₹' + fmt(c.units * RATE)]), 'No consumers to bill yet.')
+    + (consumers.length ? '<p class="check">✔ Reports generated successfully (₹' + RATE + ' per unit)</p>' : '');
+
+  $('queue').innerHTML = Array.from({ length: MAX }, (_, i) =>
+    queue[i] !== undefined ? `<div class="slot f" title="Fault ID">${queue[i]}</div>` : '<div class="slot"></div>').join('');
+
+  $('dot').className = 'dot' + (online ? '' : ' off');
+  $('status').textContent = 'Status: ' + (online ? 'ONLINE' : 'OFFLINE');
+  $('shutBody').innerHTML = online
+    ? '<p>Shutting down stops the grid control session. Registered data stays on this page until you reload.</p><button class="btn red" id="shutBtn">Shut down system</button>'
+    : '<p class="check">⚡ System shut down</p><p>Thank you for using the Smart Grid System.</p><button class="btn amber" id="startBtn">Restart system</button>';
+  if ($('shutBtn')) $('shutBtn').onclick = () => { online = false; render(); };
+  if ($('startBtn')) $('startBtn').onclick = () => { online = true; render(); };
+  document.querySelectorAll('main button.btn:not(#shutBtn):not(#startBtn), main input').forEach(el => el.disabled = !online);
+}
+
+$('addBtn').onclick = () => {
+  const id = parseInt($('cid').value, 10), name = $('cname').value.trim(),
+        loc = $('cloc').value.trim(), units = parseFloat($('cunits').value);
+  if (!Number.isInteger(id) || id <= 0 || !name || !loc || !(units >= 0))
+    return msg($('addMsg'), 'Fill in every field. ID must be a positive whole number and usage must be 0 or more.', 'err');
+  if (consumers.some(c => c.id === id)) return msg($('addMsg'), `Consumer ID ${id} is already registered.`, 'err');
+  consumers.unshift({ id, name, location: loc, units });
+  root = insertBST(root, id);
+  ['cid','cname','cloc','cunits'].forEach(k => $(k).value = '');
+  msg($('addMsg'), 'Consumer successfully integrated into the grid.', 'ok');
+  render();
+};
+
+$('reportBtn').onclick = () => {
+  const id = parseInt($('fid').value, 10);
+  if (!Number.isInteger(id)) return msg($('faultMsg'), 'Enter a fault ID.', 'err');
+  if (queue.length >= MAX) return msg($('faultMsg'), 'Queue full. Resolve a fault before reporting another.', 'err');
+  queue.push(id); $('fid').value = '';
+  msg($('faultMsg'), 'Fault logged and sent to the service queue.', 'ok');
+  render();
+};
+
+$('resolveBtn').onclick = () => {
+  if (!queue.length) return msg($('faultMsg'), 'No faults in the queue.', 'err');
+  const id = queue.shift();
+  msg($('faultMsg'), `Resolved fault ${id}. Power restored successfully.`, 'ok');
+  render();
+};
+
+$('searchBtn').onclick = () => {
+  const id = parseInt($('sid').value, 10);
+  if (!Number.isInteger(id)) return msg($('searchMsg'), 'Enter a consumer ID.', 'err');
+  if (searchBST(root, id)) {
+    const c = consumers.find(x => x.id === id);
+    msg($('searchMsg'), `✔ Consumer found in network: ${c.name}, ${c.location}. Status: ACTIVE | Supply: NORMAL`, 'ok');
+  } else msg($('searchMsg'), 'Consumer not found.', 'err');
+};
+
+show('consumers');
+</script>
+</body>
+</html>
