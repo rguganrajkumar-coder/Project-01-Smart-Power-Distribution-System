@@ -1,5 +1,5 @@
 /*
- * TNEB Smart Power Distribution System
+ *  Smart Power Distribution System
  * ------------------------------------
  * A console-based smart grid manager written in C.
  *
